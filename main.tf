@@ -1,18 +1,28 @@
-# Configure le fournisseur AWS
-provider "aws" {
-  region     = "us-west-2"  # Remplacez par la région de votre choix
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
+
+
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  owners = ["099720109477"] # Canonical
 }
 
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = var.instance_type
 
-# Crée un bucket S3
-resource "aws_s3_bucket" "my_bucket" {
-  count = 5 
-  bucket = "my-bucket-${count.index + 1}" 
   tags = {
-    Name        = "My Bucket ${count.index + 1}"
-    Environment = "production"
+    Name = var.instance_name
   }
 }
 
